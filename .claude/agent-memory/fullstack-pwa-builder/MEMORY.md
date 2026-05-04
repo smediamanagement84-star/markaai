@@ -1,0 +1,2 @@
+- [Vercel Deployment Preparation Complete](deployment_preparation_complete.md) - MarkaAI fully prepared for Vercel deployment, CLI installed, all config and automation created, only requires user authentication
+- [MarkaAI Dual-Path Deployment Complete](deployment_both_paths_complete.md) - Both Vercel quick-deploy and GitHub integration paths prepared with complete automation and guides
