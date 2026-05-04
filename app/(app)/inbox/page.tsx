@@ -18,7 +18,7 @@ export default async function InboxPage() {
 
   if (isDevMode) {
     // Use mock data in dev mode
-    messages = getMockData('messages')
+    messages = getMockData('messages') as any[]
   } else {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()

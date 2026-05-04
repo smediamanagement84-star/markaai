@@ -39,7 +39,7 @@ export default async function ContentPage() {
 
   if (isDevMode) {
     // Use mock data in dev mode
-    posts = getMockData('posts')
+    posts = getMockData('posts') as any[]
   } else {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()

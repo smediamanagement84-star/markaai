@@ -15,8 +15,8 @@ export default async function SettingsPage() {
 
   if (isDevMode) {
     // Use mock data in dev mode
-    user = getMockData('user')
-    profile = getMockData('profile')
+    user = getMockData('user') as any
+    profile = getMockData('profile') as any
     ws = { id: 'mock-workspace-001', name: 'Himalayan Coffee House', slug: 'himalayan-coffee', owner_id: user.id, white_label_enabled: false }
     bp = {
       workspace_id: ws.id,

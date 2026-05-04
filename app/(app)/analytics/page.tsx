@@ -14,8 +14,8 @@ export default async function AnalyticsPage() {
 
   if (isDevMode) {
     // Use mock data in dev mode
-    snapshots = getMockData('analytics')
-    const posts = getMockData('posts')
+    snapshots = getMockData('analytics') as any[]
+    const posts = getMockData('posts') as any[]
     topPosts = posts
       .filter((p: any) => p.marka_score !== null)
       .sort((a: any, b: any) => (b.marka_score || 0) - (a.marka_score || 0))

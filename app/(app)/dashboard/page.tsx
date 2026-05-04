@@ -34,12 +34,12 @@ export default async function DashboardPage() {
 
   if (isDevMode) {
     // Use mock data in development mode
-    user = getMockData('user')
-    profile = getMockData('profile')
+    user = getMockData('user') as any
+    profile = getMockData('profile') as any
     workspace = { id: 'mock-workspace-001', name: 'Himalayan Coffee House', owner_id: user.id }
-    const campaigns = getMockData('campaigns')
-    const posts = getMockData('posts')
-    const leads = getMockData('leads')
+    const campaigns = getMockData('campaigns') as any[]
+    const posts = getMockData('posts') as any[]
+    const leads = getMockData('leads') as any[]
     postCount = posts.length
     leadCount = leads.length
     campaignCount = campaigns.filter((c: any) => ['active', 'scheduled'].includes(c.status)).length

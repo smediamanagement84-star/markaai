@@ -26,7 +26,7 @@ export default async function CampaignsPage() {
 
   if (isDevMode) {
     // Use mock data in dev mode
-    campaigns = getMockData('campaigns')
+    campaigns = getMockData('campaigns') as any[]
   } else {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()

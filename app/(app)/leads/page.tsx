@@ -19,7 +19,7 @@ export default async function LeadsPage() {
 
   if (isDevMode) {
     // Use mock data in dev mode
-    leads = getMockData('leads')
+    leads = getMockData('leads') as any[]
   } else {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
