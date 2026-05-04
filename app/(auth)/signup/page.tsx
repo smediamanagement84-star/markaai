@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 import { Eye, EyeOff, Check, X } from 'lucide-react'
 
 // Password validation rules
@@ -16,7 +15,6 @@ const PASSWORD_RULES = [
 
 export default function SignupPage() {
   const router = useRouter()
-  const supabase = createClient()
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -27,8 +25,8 @@ export default function SignupPage() {
   const [emailTouched, setEmailTouched] = useState(false)
   const [passwordTouched, setPasswordTouched] = useState(false)
 
-  // Demo mode detection
-  const isDemoMode = process.env.NEXT_PUBLIC_DEV_MODE === 'true'
+  // Demo mode - always enabled for now
+  const isDemoMode = true
 
   // Email validation - accepts ALL valid email formats (personal and business)
   // Validates format: user@domain.com (Gmail, Yahoo, Outlook, etc. are all allowed)
@@ -67,36 +65,18 @@ export default function SignupPage() {
       return
     }
 
-    // Demo mode: simulate signup
-    if (isDemoMode) {
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      setDone(true)
-      setLoading(false)
-      return
-    }
+    // Demo mode: simulate signup and store user info
+    await new Promise(resolve => setTimeout(resolve, 1500))
 
-    // Production mode: real Supabase signup
-    try {
-      const { error: err } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: fullName } },
-      })
+    // Store demo user in localStorage
+    localStorage.setItem('demo_user', JSON.stringify({
+      name: fullName,
+      email: email,
+      signedUpAt: new Date().toISOString()
+    }))
 
-      if (err) {
-        setError(err.message)
-        setLoading(false)
-      } else {
-        setDone(true)
-      }
-    } catch (err) {
-      if (err instanceof TypeError && err.message.includes('fetch')) {
-        setError('Demo mode: Authentication not configured. Navigate to /dashboard to see demo data.')
-      } else {
-        setError(err instanceof Error ? err.message : 'An error occurred')
-      }
-      setLoading(false)
-    }
+    setDone(true)
+    setLoading(false)
   }
 
   if (done) {

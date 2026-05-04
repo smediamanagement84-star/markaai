@@ -3,13 +3,11 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 import { Eye, EyeOff } from 'lucide-react'
 
 export function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const supabase = createClient()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -17,8 +15,8 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Demo mode detection
-  const isDemoMode = process.env.NEXT_PUBLIC_DEV_MODE === 'true'
+  // Demo mode - always enabled for now
+  const isDemoMode = true
 
   // Check for auth callback error
   useEffect(() => {
@@ -43,50 +41,23 @@ export function LoginForm() {
     setError('')
 
     // Demo mode: simulate login
-    if (isDemoMode) {
-      await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise(resolve => setTimeout(resolve, 1000))
 
-      // Save email if remember me is checked
-      if (rememberMe) {
-        localStorage.setItem('markaai_remember_email', email)
-      } else {
-        localStorage.removeItem('markaai_remember_email')
-      }
-
-      router.push('/dashboard')
-      router.refresh()
-      return
+    // Save email if remember me is checked
+    if (rememberMe) {
+      localStorage.setItem('markaai_remember_email', email)
+    } else {
+      localStorage.removeItem('markaai_remember_email')
     }
 
-    // Production mode: real Supabase login
-    try {
-      const { error: err } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
+    // Store demo user session
+    localStorage.setItem('demo_user', JSON.stringify({
+      email: email,
+      loggedInAt: new Date().toISOString()
+    }))
 
-      if (err) {
-        setError(err.message)
-        setLoading(false)
-      } else {
-        // Save email if remember me is checked
-        if (rememberMe) {
-          localStorage.setItem('markaai_remember_email', email)
-        } else {
-          localStorage.removeItem('markaai_remember_email')
-        }
-
-        router.push('/dashboard')
-        router.refresh()
-      }
-    } catch (err) {
-      if (err instanceof TypeError && err.message.includes('fetch')) {
-        setError('Demo mode: Authentication not configured. Navigate to /dashboard to see demo data.')
-      } else {
-        setError(err instanceof Error ? err.message : 'An error occurred')
-      }
-      setLoading(false)
-    }
+    router.push('/dashboard')
+    router.refresh()
   }
 
   return (
