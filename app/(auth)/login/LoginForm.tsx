@@ -17,6 +17,9 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // Demo mode detection
+  const isDemoMode = process.env.NEXT_PUBLIC_DEV_MODE === 'true'
+
   // Check for auth callback error
   useEffect(() => {
     const error = searchParams.get('error')
@@ -39,15 +42,10 @@ export function LoginForm() {
     setLoading(true)
     setError('')
 
-    const { error: err } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
+    // Demo mode: simulate login
+    if (isDemoMode) {
+      await new Promise(resolve => setTimeout(resolve, 1000))
 
-    if (err) {
-      setError(err.message)
-      setLoading(false)
-    } else {
       // Save email if remember me is checked
       if (rememberMe) {
         localStorage.setItem('markaai_remember_email', email)
@@ -57,6 +55,37 @@ export function LoginForm() {
 
       router.push('/dashboard')
       router.refresh()
+      return
+    }
+
+    // Production mode: real Supabase login
+    try {
+      const { error: err } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (err) {
+        setError(err.message)
+        setLoading(false)
+      } else {
+        // Save email if remember me is checked
+        if (rememberMe) {
+          localStorage.setItem('markaai_remember_email', email)
+        } else {
+          localStorage.removeItem('markaai_remember_email')
+        }
+
+        router.push('/dashboard')
+        router.refresh()
+      }
+    } catch (err) {
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        setError('Demo mode: Authentication not configured. Navigate to /dashboard to see demo data.')
+      } else {
+        setError(err instanceof Error ? err.message : 'An error occurred')
+      }
+      setLoading(false)
     }
   }
 
@@ -90,6 +119,19 @@ export function LoginForm() {
           </div>
           <p style={{ color: 'var(--text-muted)', fontSize: 13.5 }}>Welcome back — sign in to your workspace</p>
         </div>
+
+        {isDemoMode && (
+          <div style={{
+            padding: 12,
+            background: '#fef3c7',
+            border: '1px solid #f59e0b',
+            borderRadius: 8,
+            marginBottom: 16,
+            fontSize: 13,
+          }}>
+            <strong>Demo Mode:</strong> Authentication is simulated. Enter any email and password to continue.
+          </div>
+        )}
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {error && (

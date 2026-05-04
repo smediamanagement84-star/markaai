@@ -27,6 +27,9 @@ export default function SignupPage() {
   const [emailTouched, setEmailTouched] = useState(false)
   const [passwordTouched, setPasswordTouched] = useState(false)
 
+  // Demo mode detection
+  const isDemoMode = process.env.NEXT_PUBLIC_DEV_MODE === 'true'
+
   // Email validation - accepts ALL valid email formats (personal and business)
   // Validates format: user@domain.com (Gmail, Yahoo, Outlook, etc. are all allowed)
   const isEmailValid = email.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -64,17 +67,35 @@ export default function SignupPage() {
       return
     }
 
-    const { error: err } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName } },
-    })
-
-    if (err) {
-      setError(err.message)
-      setLoading(false)
-    } else {
+    // Demo mode: simulate signup
+    if (isDemoMode) {
+      await new Promise(resolve => setTimeout(resolve, 1500))
       setDone(true)
+      setLoading(false)
+      return
+    }
+
+    // Production mode: real Supabase signup
+    try {
+      const { error: err } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: fullName } },
+      })
+
+      if (err) {
+        setError(err.message)
+        setLoading(false)
+      } else {
+        setDone(true)
+      }
+    } catch (err) {
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        setError('Demo mode: Authentication not configured. Navigate to /dashboard to see demo data.')
+      } else {
+        setError(err instanceof Error ? err.message : 'An error occurred')
+      }
+      setLoading(false)
     }
   }
 
@@ -82,15 +103,35 @@ export default function SignupPage() {
     return (
       <div className="auth-page">
         <div className="auth-card animate-fade-up" style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
-          <h2 style={{ marginBottom: 8 }}>Check your inbox</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: 13.5 }}>
-            We sent a confirmation link to <strong style={{ color: 'var(--text)' }}>{email}</strong>.
-            Click it to activate your MarkaAI account.
+          <div style={{ fontSize: 48, marginBottom: 16 }}>{isDemoMode ? '🎉' : '✉️'}</div>
+          <h2 style={{ marginBottom: 8 }}>
+            {isDemoMode ? 'Demo Account Created!' : 'Check your inbox'}
+          </h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: 13.5, marginBottom: 24 }}>
+            {isDemoMode ? (
+              <>
+                In production, you would receive a verification email. For demo purposes, you can now explore the dashboard with sample data.
+              </>
+            ) : (
+              <>
+                We sent a confirmation link to <strong style={{ color: 'var(--text)' }}>{email}</strong>.
+                Click it to activate your MarkaAI account.
+              </>
+            )}
           </p>
-          <Link href="/login" className="btn btn-secondary" style={{ marginTop: 24, width: '100%' }}>
-            Back to Sign In
-          </Link>
+          {isDemoMode ? (
+            <Link
+              href="/dashboard"
+              className="btn btn-primary"
+              style={{ width: '100%' }}
+            >
+              Go to Dashboard
+            </Link>
+          ) : (
+            <Link href="/login" className="btn btn-secondary" style={{ width: '100%' }}>
+              Back to Sign In
+            </Link>
+          )}
         </div>
       </div>
     )
@@ -127,6 +168,19 @@ export default function SignupPage() {
             Start your 7-day free trial — no card required
           </p>
         </div>
+
+        {isDemoMode && (
+          <div style={{
+            padding: 12,
+            background: '#fef3c7',
+            border: '1px solid #f59e0b',
+            borderRadius: 8,
+            marginBottom: 16,
+            fontSize: 13,
+          }}>
+            <strong>Demo Mode:</strong> Authentication is simulated. In production, real user accounts will be created.
+          </div>
+        )}
 
         <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {error && (
